@@ -130,61 +130,55 @@ const nodemailer = require("nodemailer");
 // REQUEST PREMIUM (MANUAL VERIFICATION)
 exports.requestPremium = async (req, res) => {
     try {
-        // We now expect both email and transactionId from the frontend
+        console.log("🚨 1. INCOMING REQUEST FOR PREMIUM...");
+        
         const { email, transactionId } = req.body;
-
         const user = await User.findOne({ email });
 
         if (!user) {
+            console.log("❌ User not found in DB.");
             return res.status(400).json({ message: "User not found" });
         }
 
-        // Configure Nodemailer
+        console.log("✅ 2. USER FOUND. CONFIGURING EMAIL...");
+
+        // NEW CONFIG: Using Port 587 (Standard TLS) instead of 465
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 465, 
-            secure: true, // Use SSL
+            port: 587, 
+            secure: false, // MUST be false for port 587
             auth: {
                 user: process.env.ADMIN_EMAIL, 
                 pass: process.env.ADMIN_APP_PASSWORD 
             },
             tls: {
-                // Do not fail on invalid certs (common requirement for free cloud tiers)
                 rejectUnauthorized: false 
             }
         });
 
         const mailOptions = {
             from: process.env.ADMIN_EMAIL,
-            to: process.env.ADMIN_EMAIL,
+            to: process.env.ADMIN_EMAIL, 
             subject: `🚨 Premium Payment Request: ${user.name}`,
             text: `
-                A user claims to have paid for NoteNova Premium via the QR Code.
-                
-                USER DETAILS:
-                Name: ${user.name}
+                Transaction ID: ${transactionId}
                 Email: ${user.email}
-                Phone: ${user.phone}
-                MongoDB User ID: ${user._id}
-
-                PAYMENT DETAILS:
-                Transaction ID / UPI Ref: ${transactionId}
-
-                ACTION REQUIRED:
-                1. Check your bank/UPI app to confirm you received ₹500 with Transaction ID: ${transactionId}.
-                2. If confirmed, go to MongoDB Atlas.
-                3. Find the user and change "premium" from false to true.
-            `
+            ` // Keeping the text short just for testing
         };
 
+        console.log("⏳ 3. ATTEMPTING TO SEND EMAIL TO GOOGLE...");
+        
         await transporter.sendMail(mailOptions);
 
-        res.status(200).json({
-            message: "Payment reported successfully! Please allow up to 7 business days for manual verification."
+        console.log("🚀 4. EMAIL SENT SUCCESSFULLY!");
+
+        res.status(200).json({ 
+            message: "Payment reported successfully! Please allow up to 7 business days for manual verification." 
         });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.log("🔥 ERROR CRASH:", error);
+        res.status(500).json({ message: "Connection timeout or server error" });
     }
 };
 // GET FRESH USER DATA & CHECK EXPIRY
