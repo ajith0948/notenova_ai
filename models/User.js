@@ -1,47 +1,37 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-
-    name: {
-        type: String,
+    name: { 
+        type: String, 
+        required: true 
+    },
+    email: { 
+        type: String, 
+        required: true, 
+        unique: true 
+    },
+    password: { 
+        type: String, 
         required: true,
-        trim: true
+        // THIS IS THE ONLY RULE NOW: Must be at least 7 characters
+        minlength: [7, "Password must be more than 6 characters"] 
     },
-
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true
+    phone: { 
+        type: String, 
+        required: true 
     },
-
-    phone: {
-        type: String,
-        required: true,
-        unique: true
+    dob: { 
+        type: String, 
+        required: true 
     },
-
-    dob: {
-        type: String,
-        required: true
+    premium: { 
+        type: Boolean, 
+        default: false 
     },
-
-    password: {
-        type: String,
-        required: true,
-        minlength: 8
-    },
-
-    premium: {
-        type: Boolean,
-        default: false
-    },
-
-    premiumExpiry: {
-        type: Date,
-        default: null
+    premiumExpiry: { 
+        type: Date, 
+        default: null 
     }
-
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
