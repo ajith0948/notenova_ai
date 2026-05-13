@@ -141,10 +141,16 @@ exports.requestPremium = async (req, res) => {
 
         // Configure Nodemailer
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465, 
+            secure: true, // Use SSL
             auth: {
-                user: process.env.ADMIN_EMAIL,
-                pass: process.env.ADMIN_APP_PASSWORD
+                user: process.env.ADMIN_EMAIL, 
+                pass: process.env.ADMIN_APP_PASSWORD 
+            },
+            tls: {
+                // Do not fail on invalid certs (common requirement for free cloud tiers)
+                rejectUnauthorized: false 
             }
         });
 
