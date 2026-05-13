@@ -1,11 +1,10 @@
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 
 // SIGNUP
-
 exports.signup = async (req, res) => {
-
     try {
-
         const {
             name,
             email,
@@ -15,57 +14,35 @@ exports.signup = async (req, res) => {
         } = req.body;
 
         // CHECK EMAIL
-
-        const existingEmail =
-            await User.findOne({ email });
-
+        const existingEmail = await User.findOne({ email });
         if (existingEmail) {
-
             return res.status(400).json({
                 message: "Email already exists"
             });
-
         }
 
         // CHECK PHONE
-
-        const existingPhone =
-            await User.findOne({ phone });
-
+        const existingPhone = await User.findOne({ phone });
         if (existingPhone) {
-
             return res.status(400).json({
                 message: "Phone number already exists"
             });
-
         }
 
-        // PASSWORD VALIDATION
-
-        const strongPassword =
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$/;
-
-        if (!strongPassword.test(password)) {
-
+        // 🚨 NEW SIMPLE PASSWORD VALIDATION 🚨
+        if (!password || password.length <= 6) {
             return res.status(400).json({
-
-                message:
-                    "Password must contain uppercase, lowercase, number and 8+ characters"
-
+                message: "Password must be more than 6 characters long!"
             });
-
         }
 
         // CREATE USER
-
         const user = new User({
-
             name,
             email,
             phone,
             dob,
             password
-
         });
 
         await user.save();
@@ -75,39 +52,28 @@ exports.signup = async (req, res) => {
         });
 
     } catch (error) {
-
         res.status(500).json({
             message: error.message
         });
-
     }
-
 };
 
 // LOGIN
-
 exports.login = async (req, res) => {
-
     try {
-
         const { email, password } = req.body;
-
         const user = await User.findOne({ email });
 
         if (!user) {
-
             return res.status(400).json({
                 message: "User not found"
             });
-
         }
 
         if (user.password !== password) {
-
             return res.status(400).json({
                 message: "Incorrect password"
             });
-
         }
 
         res.status(200).json({
@@ -116,17 +82,12 @@ exports.login = async (req, res) => {
         });
 
     } catch (error) {
-
         res.status(500).json({
             message: error.message
         });
-
     }
-
 };
-const nodemailer = require("nodemailer");
 
-// REQUEST PREMIUM (MANUAL VERIFICATION)
 // REQUEST PREMIUM (MANUAL VERIFICATION)
 exports.requestPremium = async (req, res) => {
     try {
@@ -181,6 +142,7 @@ exports.requestPremium = async (req, res) => {
         res.status(500).json({ message: "Connection timeout or server error" });
     }
 };
+
 // GET FRESH USER DATA & CHECK EXPIRY
 exports.getUser = async (req, res) => {
     try {
